@@ -135,7 +135,7 @@
                             "options": {
                                 "range": [
                                     10,
-                                    301
+                                    86400
                                 ]
                             },
                             "help": "Time interval of the data input, in seconds.",
@@ -144,7 +144,55 @@
                         {
                             "type": "index",
                             "field": "index",
-                            "label": "Index"
+                            "label": "Index",
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "label": "Catalyst Center Host",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "errorMsg": "Input Hostname must begin with \"https:\\\\\"",
+                                    "pattern": "^https://.*$"
+                                },
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of input name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ],
+                            "field": "catalyst_center_host",
+                            "help": "A Catalyst Center host for the data input.",
+                            "required": true
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Catalyst Center Software Version",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "2.3.5.3",
+                                        "label": "2.3.5.3"
+                                    },
+                                    {
+                                        "value": "2.3.7.6",
+                                        "label": "2.3.7.6"
+                                    },
+                                    {
+                                        "value": "2.3.7.9",
+                                        "label": "2.3.7.9"
+                                    },
+                                    {
+                                        "value": "3.1.3.0",
+                                        "label": "3.1.3.0"
+                                    }
+                                ]
+                            },
+                            "required": true,
+                            "field": "catalyst_center_version"
                         },
                         {
                             "type": "singleSelect",
@@ -230,7 +278,7 @@
     "meta": {
         "name": "ta_cisco_catalyst_center_community_addon",
         "restRoot": "ta_cisco_catalyst_center_community_addon",
-        "version": "0.0.0+f264948",
+        "version": "0.0.0+e730a7f",
         "displayName": "Cisco Catalyst Center Community Add-on",
         "schemaVersion": "0.0.10",
         "supportedThemes": [
