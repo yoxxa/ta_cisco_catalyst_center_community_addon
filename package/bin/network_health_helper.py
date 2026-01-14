@@ -1,3 +1,5 @@
+import utilities
+
 import json
 import logging
 
@@ -7,10 +9,6 @@ from splunklib import modularinput as smi
 
 
 ADDON_NAME = "ta_cisco_catalyst_center_community_addon"
-
-def logger_for_input(input_name: str) -> logging.Logger:
-    return log.Logs().get_logger(f"{ADDON_NAME.lower()}_{input_name}")
-
 
 def get_account_api_key(session_key: str, account_name: str):
     cfm = conf_manager.ConfManager(
@@ -53,7 +51,7 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
     # }
     for input_name, input_item in inputs.inputs.items():
         normalized_input_name = input_name.split("/")[-1]
-        logger = logger_for_input(normalized_input_name)
+        logger = utilities.logger_for_input(normalized_input_name)
         try:
             session_key = inputs.metadata["session_key"]
             log_level = conf_manager.get_log_level(
