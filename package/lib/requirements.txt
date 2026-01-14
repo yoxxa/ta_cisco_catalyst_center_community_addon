@@ -1,0 +1,5 @@
+splunktaucclib
+splunk-sdk
+solnlib
+dnacentersdk==2.10.5
+polars==1.37.1
