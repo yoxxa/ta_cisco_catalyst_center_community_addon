@@ -10,16 +10,6 @@ from splunklib import modularinput as smi
 
 ADDON_NAME = "ta_cisco_catalyst_center_community_addon"
 
-def get_account_api_key(session_key: str, account_name: str):
-    cfm = conf_manager.ConfManager(
-        session_key,
-        ADDON_NAME,
-        realm=f"__REST_CREDENTIAL__#{ADDON_NAME}#configs/conf-ta_cisco_catalyst_center_community_addon_account",
-    )
-    account_conf_file = cfm.get_conf("ta_cisco_catalyst_center_community_addon_account")
-    return account_conf_file.get(account_name).get("api_key")
-
-
 def get_data_from_api(logger: logging.Logger):
     logger.info("Getting data from an external API")
     dummy_data = [
@@ -38,17 +28,6 @@ def validate_input(definition: smi.ValidationDefinition):
 
 
 def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
-    # inputs.inputs is a Python dictionary object like:
-    # {
-    #   "network_health://<input_name>": {
-    #     "account": "<account_name>",
-    #     "disabled": "0",
-    #     "host": "$decideOnStartup",
-    #     "index": "<index_name>",
-    #     "interval": "<interval_value>",
-    #     "python.version": "python3",
-    #   },
-    # }
     for input_name, input_item in inputs.inputs.items():
         normalized_input_name = input_name.split("/")[-1]
         logger = utilities.logger_for_input(normalized_input_name)
