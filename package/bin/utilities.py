@@ -1,11 +1,10 @@
 import logging
+from dnacentersdk import DNACenterAPI
 
 from solnlib import conf_manager, log
 from splunklib import modularinput as smi
 
 ADDON_NAME = "ta_cisco_catalyst_center_community_addon"
-# TODO - change this to be dynamic with user input
-DNAC_VERSION = "2.3.7.9"
 
 def logger_for_input(input_name: str) -> logging.Logger:
     """Get the Logger instance for the input with name `input_name`"""
@@ -28,3 +27,15 @@ def get_account_conf_file(inputs: dict, logger: logging.Logger) -> dict:
     )
     logger.setLevel(log_level)
     return account_conf_file
+
+# TODO - add certificate handling
+def construct_dnacentersdk(account_conf_file: dict, input_item: dict) -> DNACenterAPI:
+    """Creates a new `DNACenterAPI` object"""
+    return DNACenterAPI(
+        username = account_conf_file.get(input_item.get("account")).get("username"),
+        password = account_conf_file.get(input_item.get("account")).get("password"),
+        base_url = input_item["catalyst_center_host"],
+        version = input_item["catalyst_center_version"],
+        # see TODO
+        verify = False
+    )

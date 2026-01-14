@@ -33,6 +33,7 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
         logger = utilities.logger_for_input(normalized_input_name)
         try:
             account_conf_file = utilities.get_account_conf_file(inputs, logger)
+            api = utilities.construct_dnacentersdk(account_conf_file, input_item)
             data = get_data_from_api(logger)
             sourcetype = "dummy-data"
             for line in data:
