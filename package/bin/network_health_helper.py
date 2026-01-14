@@ -1,7 +1,6 @@
 import utilities
 
 from dnacentersdk import DNACenterAPI
-import json
 import logging
 
 import import_declare_test
@@ -17,7 +16,6 @@ DATA = dict({
 def get_overall_network_health(api: DNACenterAPI, logger: logging.Logger) -> None:
     # Only ever a single record in the list, hence [0]
     response = api.topology.get_overall_network_health().response[0]
-    # do we need to pop this? - old code
     response.pop("time")
     DATA["cisco:catc:network_health"] = response
 
@@ -30,7 +28,6 @@ def get_building_health(api: DNACenterAPI, logger: logging.Logger) -> None:
 def validate_input(definition: smi.ValidationDefinition):
     return
 
-
 def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
     for input_name, input_item in inputs.inputs.items():
         normalized_input_name = input_name.split("/")[-1]
@@ -42,11 +39,12 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
             get_overall_network_health(api, logger)
             get_area_health(api, logger)
             get_building_health(api, logger)
+            utilities.tag_cisco_dnac_host(DATA, input_item)
             utilities.send_data_to_splunk(
-                event_writer, 
-                DATA, 
-                logger, 
-                input_item, 
+                event_writer,
+                DATA,
+                logger,
+                input_item,
                 input_name
             )
             log.modular_input_end(logger, normalized_input_name)
