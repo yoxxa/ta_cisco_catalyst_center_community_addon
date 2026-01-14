@@ -40,19 +40,57 @@
                         },
                         {
                             "type": "text",
-                            "label": "API key",
-                            "field": "api_key",
-                            "help": "API key",
+                            "label": "Username",
+                            "field": "username",
+                            "help": "Username for Catalyst Center",
+                            "required": true,
+                            "encrypted": false,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of username should be between 1 and 50",
+                                    "minLength": 1,
+                                    "maxLength": 50
+                                }
+                            ]
+                        },
+                        {
+                            "type": "text",
+                            "label": "password",
+                            "field": "password",
+                            "help": "Password for Catalyst Center",
                             "required": true,
                             "encrypted": true,
                             "validators": [
                                 {
                                     "type": "string",
-                                    "errorMsg": "Length of API key should be between 1 and 50",
+                                    "errorMsg": "Length of password should be between 1 and 50",
                                     "minLength": 1,
                                     "maxLength": 50
                                 }
                             ]
+                        },
+                        {
+                            "type": "file",
+                            "label": "DNAC certificate",
+                            "help": "Certificate for DNAC",
+                            "field": "dnac_certificate",
+                            "options": {
+                                "fileSupportMessage": "Support message",
+                                "supportedFileTypes": [
+                                    "pem"
+                                ],
+                                "maxFileSize": 100,
+                                "useBase64Encoding": false
+                            },
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "(-----BEGIN CERTIFICATE-----(\n|\r|\r\n)([0-9a-zA-Z\\+/=]{64}(\n|\r|\r\n))*([0-9a-zA-Z\\+/=]{1,63}(\n|\r|\r\n))?-----END CERTIFICATE-----)"
+                                }
+                            ],
+                            "encrypted": false,
+                            "required": false
                         }
                     ],
                     "title": "Accounts"
@@ -192,7 +230,7 @@
     "meta": {
         "name": "ta_cisco_catalyst_center_community_addon",
         "restRoot": "ta_cisco_catalyst_center_community_addon",
-        "version": "0.0.0+4d4d542",
+        "version": "0.0.0+f264948",
         "displayName": "Cisco Catalyst Center Community Add-on",
         "schemaVersion": "0.0.10",
         "supportedThemes": [
