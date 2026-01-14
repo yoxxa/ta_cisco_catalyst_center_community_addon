@@ -20,7 +20,7 @@ def get_account_api_key(session_key: str, account_name: str):
     return account_conf_file.get(account_name).get("api_key")
 
 
-def get_data_from_api(logger: logging.Logger, api_key: str):
+def get_data_from_api(logger: logging.Logger):
     logger.info("Getting data from an external API")
     dummy_data = [
         {
@@ -53,17 +53,8 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
         normalized_input_name = input_name.split("/")[-1]
         logger = utilities.logger_for_input(normalized_input_name)
         try:
-            session_key = inputs.metadata["session_key"]
-            log_level = conf_manager.get_log_level(
-                logger=logger,
-                session_key=session_key,
-                app_name=ADDON_NAME,
-                conf_name="ta_cisco_catalyst_center_community_addon_settings",
-            )
-            logger.setLevel(log_level)
-            log.modular_input_start(logger, normalized_input_name)
-            api_key = get_account_api_key(session_key, input_item.get("account"))
-            data = get_data_from_api(logger, api_key)
+            account_conf_file = utilities.get_account_conf_file(inputs, logger)
+            data = get_data_from_api(logger)
             sourcetype = "dummy-data"
             for line in data:
                 event_writer.write_event(
