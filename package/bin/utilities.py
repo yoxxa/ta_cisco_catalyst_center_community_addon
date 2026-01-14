@@ -1,3 +1,4 @@
+import json
 import logging
 from dnacentersdk import DNACenterAPI
 
@@ -39,3 +40,39 @@ def construct_dnacentersdk(account_conf_file: dict, input_item: dict) -> DNACent
         # see TODO
         verify = False
     )
+
+def send_data_to_splunk(
+    event_writer: smi.EventWriter, 
+    data: dict, 
+    logger: logging.Logger,
+    input_item: dict, 
+    input_name: str
+) -> None:
+    for sourcetype in data:
+        # single record i.e. dict
+        if isinstance(data[sourcetype], dict):
+            event_writer.write_event(
+                smi.Event(
+                    data = json.dumps(data[sourcetype], ensure_ascii=False, default=str),
+                    index = input_item["index"],
+                    sourcetype = sourcetype,
+                )
+            )
+        # multiple records i.e. list
+        if isinstance(data[sourcetype], list):
+            for _data in data[sourcetype]:
+                event_writer.write_event(
+                    smi.Event(
+                        data = json.dumps(_data, ensure_ascii=False, default=str),
+                        index = input_item["index"],
+                        sourcetype = sourcetype,
+                    )
+                )
+        log.events_ingested(
+            logger,
+            input_name,
+            sourcetype,
+            len(data[sourcetype]),
+            input_item["index"],
+            account=input_item["account"],
+        )
