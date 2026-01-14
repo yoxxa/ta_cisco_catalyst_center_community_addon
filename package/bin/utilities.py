@@ -76,3 +76,13 @@ def send_data_to_splunk(
             input_item["index"],
             account=input_item["account"],
         )
+
+def tag_cisco_dnac_host(data: dict, input_item: dict) -> None:
+    for sourcetype in data:
+        # single record i.e. dict
+        if isinstance(data[sourcetype], dict):
+            data[sourcetype].update({"cisco_dnac_host": input_item["catalyst_center_host"]})
+        # multiple records i.e. list
+        if isinstance(data[sourcetype], list):
+            for _data in data[sourcetype]:
+                _data.update({"cisco_dnac_host": input_item["catalyst_center_host"]})
