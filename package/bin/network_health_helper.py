@@ -32,14 +32,24 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
     for input_name, input_item in inputs.inputs.items():
         normalized_input_name = input_name.split("/")[-1]
         logger = utilities.logger_for_input(normalized_input_name)
+        utilities.set_logger_level(inputs, logger)
         log.modular_input_start(logger, normalized_input_name)
         try:
-            account_conf_file = utilities.get_account_conf_file(inputs, logger)
-            api = utilities.construct_dnacentersdk(account_conf_file, input_item)
+            catalyst_center_conf_file = utilities.get_catalyst_center_conf_file(inputs)
+            account_conf_file = utilities.get_account_conf_conf_file(inputs)
+            api = utilities.construct_dnacentersdk(
+                catalyst_center_conf_file, 
+                account_conf_file, 
+                input_item
+            )
             get_overall_network_health(api, logger)
             get_area_health(api, logger)
             get_building_health(api, logger)
-            utilities.tag_cisco_dnac_host(DATA, input_item)
+            utilities.tag_cisco_dnac_host(
+                DATA,
+                catalyst_center_conf_file,
+                input_item
+            )
             utilities.send_data_to_splunk(
                 event_writer,
                 DATA,
