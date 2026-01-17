@@ -386,7 +386,23 @@
                         }
                     }
                 ]
-            }
+            },
+            "groupsMenu": [
+                {
+                    "groupName": "api",
+                    "groupTitle": "API",
+                    "groupServices": [
+                        "network_health_api"
+                    ]
+                },
+                {
+                    "groupName": "reports",
+                    "groupTitle": "Reports",
+                    "groupServices": [
+                        "inventory_report"
+                    ]
+                }
+            ]
         },
         "dashboard": {
             "panels": [
@@ -399,7 +415,7 @@
     "meta": {
         "name": "ta_cisco_catalyst_center_community_addon",
         "restRoot": "ta_cisco_catalyst_center_community_addon",
-        "version": "0.0.0+3f514db",
+        "version": "0.0.0+66b0af2",
         "displayName": "Cisco Catalyst Center Community Add-on",
         "schemaVersion": "0.0.10",
         "supportedThemes": [
