@@ -84,6 +84,6 @@ class CatalystCenterReport:
         with open(self.lookup_table_path, "w") as file:
             fcntl.flock(file, fcntl.LOCK_EX)
             writer = csv.writer(file, lineterminator="\n")
-            x = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
-            writer.writerows(x)
+            report_rows = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
+            writer.writerows(report_rows)
             fcntl.flock(file, fcntl.LOCK_UN)
