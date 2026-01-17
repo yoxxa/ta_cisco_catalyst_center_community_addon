@@ -28,12 +28,12 @@ class CatalystCenterReport:
         self.execution_id = None
         self.data: bytes = None
 
-    def report(self) -> None:
+    def report(self, cisco_dnac_host: str) -> None:
         try:
             self.get_report()
             self.get_execution_detail()
             self.load_csv_report()
-            self.update_lookup_table()
+            self.update_lookup_table(cisco_dnac_host)
         except (MalformedRequest, ApiError) as error:
             raise error
 
@@ -77,13 +77,18 @@ class CatalystCenterReport:
         report_bytes = self.get_report_contents()
         self.data = report_bytes.split(b"\n\n")[-1]
 
-
     # TODO - row update for specific Catalyst Center instead of complete overwrite of all
-    def update_lookup_table(self) -> None:
+    def update_lookup_table(self, cisco_dnac_host: str) -> None:
         """Updates the lookup table on disk"""
         with open(self.lookup_table_path, "w") as file:
             fcntl.flock(file, fcntl.LOCK_EX)
             writer = csv.writer(file, lineterminator="\n")
             report_rows = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
+            self.tag_cisco_dnac_host(report_rows, cisco_dnac_host)
             writer.writerows(report_rows)
             fcntl.flock(file, fcntl.LOCK_UN)
+
+    def tag_cisco_dnac_host(self, rows: list[str], cisco_dnac_host: str) -> None:
+        rows[0].append("cisco_dnac_host")
+        for index in range(1, len(rows)):
+            rows[index].append(cisco_dnac_host)

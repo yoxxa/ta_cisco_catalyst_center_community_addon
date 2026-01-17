@@ -28,7 +28,7 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
                 api,
                 logger
             )
-            report.report()
+            report.report(input_item["catalyst_center_host"])
             log.modular_input_end(logger, normalized_input_name)
         except Exception as e:
             log.log_exception(logger, e, "my custom error type", msg_before="Exception raised while ingesting data for demo_input: ")
