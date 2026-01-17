@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 import time
 from pathlib import Path
 import csv
@@ -77,18 +78,43 @@ class CatalystCenterReport:
         report_bytes = self.get_report_contents()
         self.data = report_bytes.split(b"\n\n")[-1]
 
-    # TODO - row update for specific Catalyst Center instead of complete overwrite of all
     def update_lookup_table(self, cisco_dnac_host: str) -> None:
         """Updates the lookup table on disk"""
-        with open(self.lookup_table_path, "w") as file:
+        with open(self.lookup_table_path, "r+") as file:
             fcntl.flock(file, fcntl.LOCK_EX)
-            writer = csv.writer(file, lineterminator="\n")
-            report_rows = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
-            self.tag_cisco_dnac_host(report_rows, cisco_dnac_host)
-            writer.writerows(report_rows)
+            report_rows = self.gather_report_rows(cisco_dnac_host)
+            report_rows.extend(self.get_valid_rows_from_lookup(file, cisco_dnac_host))
+            self.write_to_lookup(file, report_rows)
             fcntl.flock(file, fcntl.LOCK_UN)
 
-    def tag_cisco_dnac_host(self, rows: list[str], cisco_dnac_host: str) -> None:
+    def gather_report_rows(self, cisco_dnac_host: str) -> list[list[str]]:
+        report_rows = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
+        self.tag_cisco_dnac_host(report_rows, cisco_dnac_host)
+        return report_rows
+
+    def tag_cisco_dnac_host(self, rows: list[list[str]], cisco_dnac_host: str) -> None:
         rows[0].append("cisco_dnac_host")
         for index in range(1, len(rows)):
             rows[index].append(cisco_dnac_host)
+
+    def get_valid_rows_from_lookup(self, file: TextIOWrapper, cisco_dnac_host: str) -> list[list[str]]:
+        file.seek(0)
+        reader = csv.reader(file, lineterminator="\n")
+        preserved_rows = list()
+        old_rows = list(reader)
+        if old_rows:
+            headers = old_rows[0]
+            try:
+                host_idx = headers.index("cisco_dnac_host")
+                # Keep rows not matching cisco_dnac_host
+                for row in old_rows[1:]:
+                    if len(row) > host_idx and row[host_idx] != cisco_dnac_host:
+                        preserved_rows.append(row)
+            except ValueError:
+                raise
+        return preserved_rows
+
+    def write_to_lookup(self, file: TextIOWrapper, rows: list[list[str]]) -> None:
+        file.seek(0)
+        writer = csv.writer(file, lineterminator="\n")
+        writer.writerows(rows)
