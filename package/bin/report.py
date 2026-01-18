@@ -34,7 +34,7 @@ class CatalystCenterReport:
             self.get_report()
             self.get_execution_detail()
             self.load_csv_report()
-            self.update_lookup_table(cisco_dnac_host)
+            return self.prepare_for_kv_store(cisco_dnac_host)
         except (MalformedRequest, ApiError) as error:
             raise error
 
@@ -78,15 +78,6 @@ class CatalystCenterReport:
         report_bytes = self.get_report_contents()
         self.data = report_bytes.split(b"\n\n")[-1]
 
-    def update_lookup_table(self, cisco_dnac_host: str) -> None:
-        """Updates the lookup table on disk"""
-        with open(self.lookup_table_path, "r+") as file:
-            fcntl.flock(file, fcntl.LOCK_EX)
-            report_rows = self.gather_report_rows(cisco_dnac_host)
-            report_rows.extend(self.get_valid_rows_from_lookup(file, cisco_dnac_host))
-            self.write_to_lookup(file, report_rows)
-            fcntl.flock(file, fcntl.LOCK_UN)
-
     def gather_report_rows(self, cisco_dnac_host: str) -> list[list[str]]:
         report_rows = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
         self.tag_cisco_dnac_host(report_rows, cisco_dnac_host)
@@ -97,24 +88,8 @@ class CatalystCenterReport:
         for index in range(1, len(rows)):
             rows[index].append(cisco_dnac_host)
 
-    def get_valid_rows_from_lookup(self, file: TextIOWrapper, cisco_dnac_host: str) -> list[list[str]]:
-        file.seek(0)
-        reader = csv.reader(file, lineterminator="\n")
-        preserved_rows = list()
-        old_rows = list(reader)
-        if old_rows:
-            headers = old_rows[0]
-            try:
-                host_idx = headers.index("cisco_dnac_host")
-                # Keep rows not matching cisco_dnac_host
-                for row in old_rows[1:]:
-                    if len(row) > host_idx and row[host_idx] != cisco_dnac_host:
-                        preserved_rows.append(row)
-            except ValueError:
-                raise
-        return preserved_rows
-
-    def write_to_lookup(self, file: TextIOWrapper, rows: list[list[str]]) -> None:
-        file.seek(0)
-        writer = csv.writer(file, lineterminator="\n")
-        writer.writerows(rows)
+    def prepare_for_kv_store(self, cisco_dnac_host: str) -> list[dict]:
+        report_rows = self.gather_report_rows(cisco_dnac_host)
+        headers = report_rows[0]
+        rows = report_rows[1:]
+        return [dict(zip(headers, row)) for row in rows]

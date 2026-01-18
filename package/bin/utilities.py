@@ -4,6 +4,7 @@ from dnacentersdk import DNACenterAPI
 
 from solnlib import conf_manager, log
 from splunklib import modularinput as smi
+import splunklib.client as client
 
 ADDON_NAME = "ta_cisco_catalyst_center_community_addon"
 
@@ -105,3 +106,20 @@ def tag_cisco_dnac_host(data: dict, catalyst_center_conf_file: dict, input_item:
         if isinstance(data[sourcetype], list):
             for _data in data[sourcetype]:
                 _data.update({"cisco_dnac_host": catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host")})
+
+def save_to_kv_store(kv_data: list[dict], inputs: dict, kv_collection: str, cisco_dnac_host: str):
+    service = client.connect(
+        token = inputs.metadata["session_key"],
+        owner = "nobody",
+        app = ADDON_NAME
+    )
+    collection = service.kvstore[kv_collection]
+    # flush out old rows
+    collection.data.delete(query = json.dumps({"cisco_dnac_host": cisco_dnac_host}))
+    if kv_data:
+        batch_size = 500 
+        for i in range(0, len(kv_data), batch_size):
+            # slice the list to get the dicts
+            chunk = kv_data[i : i + batch_size]
+            # no idea why we need to deref
+            collection.data.batch_save(*chunk)
