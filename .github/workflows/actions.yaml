@@ -9,8 +9,6 @@ on:
 
 jobs:
   build:
-    needs:
-      - pre-commit
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
