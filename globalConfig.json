@@ -182,7 +182,7 @@
                         },
                         {
                             "type": "text",
-                            "label": "password",
+                            "label": "Password",
                             "field": "password",
                             "help": "Password for Catalyst Center",
                             "required": true,
@@ -425,7 +425,7 @@
     "meta": {
         "name": "ta_cisco_catalyst_center_community_addon",
         "restRoot": "ta_cisco_catalyst_center_community_addon",
-        "version": "0.0.0+376cf86",
+        "version": "0.0.0+fab1f01",
         "displayName": "Cisco Catalyst Center Community Add-on",
         "schemaVersion": "0.0.10",
         "supportedThemes": [
