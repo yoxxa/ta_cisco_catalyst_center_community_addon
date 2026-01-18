@@ -1,3 +1,5 @@
+from certificate import Certificate
+
 import json
 import logging
 from dnacentersdk import DNACenterAPI
@@ -46,11 +48,11 @@ def get_account_conf_conf_file(inputs: dict) -> dict:
     account_conf_file = cfm.get_conf(f"{ADDON_NAME}_account")
     return account_conf_file
 
-# TODO - add certificate handling
 def construct_dnacentersdk(
     catalyst_center_conf_file: dict, 
     account_conf_file: dict,
-    input_item: dict
+    input_item: dict,
+    cert: Certificate
 ) -> DNACenterAPI:
     """Creates a new `DNACenterAPI` object"""
     return DNACenterAPI(
@@ -58,9 +60,18 @@ def construct_dnacentersdk(
         password = account_conf_file.get(catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("account")).get("password"),
         base_url = catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host"),
         version = catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_version"),
-        # see TODO
-        verify = False
+        verify = cert.certificate(catalyst_center_conf_file, input_item)
     )
+
+def construct_certificate(catalyst_center_conf_file: dict, input_item: dict) -> Certificate:
+    return Certificate(
+        catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("dnac_certificate")
+    )
+
+# defining cert typehint as `Certificate | None` causes not found error - what the...
+def cleanup_cert(cert: Certificate) -> None:
+    if cert is not None:
+        cert.cleanup()
 
 def send_data_to_splunk(
     event_writer: smi.EventWriter, 

@@ -37,10 +37,15 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
         try:
             catalyst_center_conf_file = utilities.get_catalyst_center_conf_file(inputs)
             account_conf_file = utilities.get_account_conf_conf_file(inputs)
+            cert = utilities.construct_certificate(
+                catalyst_center_conf_file,
+                input_item
+            )
             api = utilities.construct_dnacentersdk(
                 catalyst_center_conf_file, 
                 account_conf_file, 
-                input_item
+                input_item,
+                cert
             )
             get_overall_network_health(api, logger)
             get_area_health(api, logger)
@@ -57,6 +62,7 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
                 input_item,
                 input_name
             )
+            utilities.cleanup_cert(cert)
             log.modular_input_end(logger, normalized_input_name)
         except Exception as e:
             log.log_exception(logger, e, "my custom error type", msg_before="Exception raised while ingesting data for demo_input: ")
