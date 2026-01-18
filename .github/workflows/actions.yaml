@@ -1,0 +1,68 @@
+name: ta_cisco_catalyst_center_community_addon CI
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: pre-commit/action@v3.0.1
+
+  build:
+    needs:
+      - pre-commit
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.7"
+      - run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+      - run: pip install -r splunk-add-on-ucc-framework
+      - run: ucc-gen build --source package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ta_cisco_catalyst_center_community_addon-raw-output
+          path: output/*
+      # Taken from https://github.com/splunk/addonfactory-ucc-generator-action/blob/main/action.yml.
+      # Should resolve `check_for_expansive_permissions` check from AppInspect CLI.
+      - run: chmod -R +r output
+        shell: bash
+      - run: chmod -R go-w output
+        shell: bash
+      - uses: actions/upload-artifact@v4
+        with:
+          name: output
+          path: output/
+      - run: ucc-gen package --path output/ta_cisco_catalyst_center_community_addon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ta_cisco_catalyst_center_community_addon
+          path: ta_cisco_catalyst_center_community_addon*.tar.gz
+
+  splunk-appinspect-cli:
+    name: splunk-appinspect-cli
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: ta_cisco_catalyst_center_community_addon
+          path: build/package
+      - uses: splunk/appinspect-cli-action@v2.11
+        with:
+          app_path: build/package
