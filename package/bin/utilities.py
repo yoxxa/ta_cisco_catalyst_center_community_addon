@@ -139,3 +139,10 @@ def save_to_kv_store(
             chunk = kv_data[i : i + batch_size]
             # no idea why we need to deref
             collection.data.batch_save(*chunk)
+
+def format_mac_address(device: dict) -> None:
+    try:
+        # format macAddress to `-` to avoid Splunk misread of `:` as new field
+        device["macAddress"] = device["macAddress"].replace(":", "-")
+    except AttributeError:
+        pass
