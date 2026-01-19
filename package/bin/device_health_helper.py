@@ -20,18 +20,11 @@ def remove_bad_fields(device: dict) -> None:
     except KeyError:
         pass
 
-def format_mac_address(device: dict) -> None:
-    try:
-        # format macAddress to `-` to avoid Splunk misread of `:` as new field
-        device["macAddress"] = device["macAddress"].replace(":", "-")
-    except AttributeError:
-        pass
-
 def get_devices(api: DNACenterAPI, logger: logging.Logger) -> None:
     response = api.devices.devices().response
     for device in response:
         remove_bad_fields(device)
-        format_mac_address(device)
+        utilities.format_mac_address(device)
     DATA["cisco:catc:device_health"] = response
 
 def validate_input(definition: smi.ValidationDefinition):
