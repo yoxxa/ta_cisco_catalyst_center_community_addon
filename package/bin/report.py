@@ -1,22 +1,15 @@
-from io import TextIOWrapper
 import time
-from pathlib import Path
-import csv
 from logging import Logger
 from dnacentersdk import DNACenterAPI, MalformedRequest, ApiError
-import fcntl
 
-# TODO - add MalformedRequest and ApiError try except blocks
 class CatalystCenterReport:
     def __init__(
         self, 
         report_name: str,
-        lookup_file_path: Path,
         api: DNACenterAPI,
         logger: Logger 
     ) -> None:
         self.report_name: str = report_name
-        self.lookup_table_path: Path = lookup_file_path
         self.api: DNACenterAPI = api
         self.logger: Logger = logger
 
@@ -29,12 +22,14 @@ class CatalystCenterReport:
         self.execution_id = None
         self.data: bytes = None
 
-    def report(self, cisco_dnac_host: str) -> None:
+    def gather_report(self, catalyst_center_conf_file: dict, input_item: dict) -> None:
         try:
             self.get_report()
             self.get_execution_detail()
             self.load_csv_report()
-            return self.prepare_for_kv_store(cisco_dnac_host)
+            return self.prepare_for_kv_store(
+                catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host")
+            )
         except (MalformedRequest, ApiError) as error:
             raise error
 
