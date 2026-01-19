@@ -469,6 +469,71 @@
                     "title": "Issues"
                 },
                 {
+                    "name": "compliance_api",
+                    "entity": [
+                        {
+                            "type": "text",
+                            "label": "Name",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "errorMsg": "Input Name must begin with a letter and consist exclusively of alphanumeric characters and underscores.",
+                                    "pattern": "^[a-zA-Z]\\w*$"
+                                },
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of input name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ],
+                            "field": "name",
+                            "help": "A unique name for the data input.",
+                            "required": true
+                        },
+                        {
+                            "type": "interval",
+                            "label": "Interval",
+                            "defaultValue": "300",
+                            "field": "interval",
+                            "options": {
+                                "range": [
+                                    10,
+                                    86400
+                                ]
+                            },
+                            "help": "Time interval of the data input, in seconds.",
+                            "required": true
+                        },
+                        {
+                            "type": "index",
+                            "field": "index",
+                            "label": "Index",
+                            "required": true
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Catalyst Center to use",
+                            "options": {
+                                "referenceName": "catalyst_center"
+                            },
+                            "help": "Catalyst Center to use for this input.",
+                            "field": "catalyst_center",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of account name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ]
+                        }
+                    ],
+                    "inputHelperModule": "compliance_helper",
+                    "title": "Compliance"
+                },
+                {
                     "name": "inventory_report",
                     "entity": [
                         {
@@ -600,6 +665,7 @@
                         "network_health_api",
                         "device_health_api",
                         "client_health_api",
+                        "compliance_api",
                         "issues_api"
                     ]
                 },
@@ -623,7 +689,7 @@
     "meta": {
         "name": "ta_cisco_catalyst_center_community_addon",
         "restRoot": "ta_cisco_catalyst_center_community_addon",
-        "version": "0.0.0+3d5405e",
+        "version": "0.0.0+52edd48",
         "displayName": "Cisco Catalyst Center Community Add-on",
         "schemaVersion": "0.0.10",
         "supportedThemes": [
