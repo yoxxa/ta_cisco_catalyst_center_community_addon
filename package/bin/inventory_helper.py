@@ -6,10 +6,9 @@ from os.path import expandvars
 from pathlib import Path
 
 import import_declare_test
-from solnlib import conf_manager, log
+from solnlib import log
 from splunklib import modularinput as smi
 
-LOOKUP_FILE_PATH = Path(expandvars("$SPLUNK_HOME/etc/apps/ta_cisco_catalyst_center_community_addon/lookups/inventory.csv"))
 KV_STORE_COLLECTION = "inventory"
 
 def transform_for_kv_store(data: list[dict]) -> list[dict]:
@@ -64,11 +63,10 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
             )
             report = CatalystCenterReport(
                 input_item["report_name"],
-                LOOKUP_FILE_PATH,
                 api,
                 logger
             )
-            kv_data = report.report(catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host"))
+            kv_data = report.gather_report(catalyst_center_conf_file, input_item)
             kv_data = transform_for_kv_store(kv_data)
             utilities.save_to_kv_store(
                 kv_data, 
