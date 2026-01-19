@@ -4,7 +4,7 @@ from dnacentersdk import DNACenterAPI
 import logging
 
 import import_declare_test
-from solnlib import conf_manager, log
+from solnlib import log
 from splunklib import modularinput as smi
 
 DATA = dict({
