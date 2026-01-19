@@ -118,7 +118,12 @@ def tag_cisco_dnac_host(data: dict, catalyst_center_conf_file: dict, input_item:
             for _data in data[sourcetype]:
                 _data.update({"cisco_dnac_host": catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host")})
 
-def save_to_kv_store(kv_data: list[dict], inputs: dict, kv_collection: str, cisco_dnac_host: str):
+def save_to_kv_store(
+    kv_data: list[dict], 
+    inputs: dict, 
+    kv_collection: str, 
+    cisco_dnac_host: str
+) -> None:
     service = client.connect(
         token = inputs.metadata["session_key"],
         owner = "nobody",
