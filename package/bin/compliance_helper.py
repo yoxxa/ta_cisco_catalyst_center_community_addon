@@ -16,9 +16,6 @@ DATA = dict({
     "cisco:catc:swim": list(),
     "cisco:catc:swim_detail": list(),
     "cisco:catc:swim_summary": list(),
-    "cisco:catc:advisory": list(),
-    "cisco:catc:advisories_summary": dict(),
-    "cisco:catc:running_vs_startup": list()
 })
 
 def get_eox_status_for_all_devices(api: DNACenterAPI, logger: logging.Logger) -> None:
@@ -46,7 +43,6 @@ def get_network_settings(api: DNACenterAPI, logger: logging.Logger) -> None:
 def get_device_network_settings(api: DNACenterAPI, logger: logging.Logger) -> None:
     response = list()
     for device in DATA["cisco:catc:network_settings"]["response"]:
-        logger.info(device)
         response.append(
             api.compliance.compliance_details_of_device(
                 device_uuid = device.deviceUuid,
@@ -81,19 +77,6 @@ def add_software_versions(api: DNACenterAPI, data: list[dict]) -> None:
 def returns_the_image_summary_for_the_given_site(api: DNACenterAPI, logger: logging.Logger) -> None:
     DATA["cisco:catc:swim_summary"] = api.software_image_management_swim.returns_the_image_summary_for_the_given_site().response
 
-def get_advisories_list(api: DNACenterAPI, logger: logging.Logger) -> None:
-    response = api.security_advisories.get_advisories_list().response
-    for advisory in response:
-        _response = api.security_advisories.get_devices_per_advisory(advisory.advisoryId).response
-        advisory.update({"deviceId": _response})
-        # Both of these fields are overly large and not useful
-        advisory.pop("defaultConfigMatchPattern")
-        advisory.pop("fixedVersions")
-    DATA["cisco:catc:advisory"] = response
-
-def get_advisories_summary(api: DNACenterAPI, logger: logging.Logger) -> None:
-    DATA["cisco:catc:advisories_summary"] = api.security_advisories.get_advisories_summary().response
-
 def validate_input(definition: smi.ValidationDefinition):
     return
 
@@ -116,8 +99,7 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
                 input_item,
                 cert
             )
-            # try except handles RO/RW disparity error
-            # known issue: if account is only RO, running vs startup and security advisories fail
+            # try except handles sending already collected data
             try:
                 get_eox_status_for_all_devices(api, logger)
                 get_eox_details_for_all_devices(api, logger)
@@ -127,14 +109,16 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
                 get_swim(api, logger)
                 get_swim_detail(api, logger)
                 returns_the_image_summary_for_the_given_site(api, logger)
-                get_advisories_list(api, logger)
-                get_advisories_summary(api, logger)
             except:
                 continue
             utilities.tag_cisco_dnac_host(
                 DATA,
                 catalyst_center_conf_file,
                 input_item,
+            )
+            utilities.tag_site_hierarchy(
+                api,
+                DATA
             )
             utilities.send_data_to_splunk(
                 event_writer,

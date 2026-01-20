@@ -10,6 +10,14 @@ import splunklib.client as client
 
 ADDON_NAME = "ta_cisco_catalyst_center_community_addon"
 
+# used for tagging Compliance input with Cat-C site hierarchy
+DEVICE_ID_FIELDS = ["uuid", "deviceUuid", "deviceId"]
+EXCLUDED_SOURCETYPES = [
+    "cisco:catc:eox_summary",
+    "cisco:catc:network_settings",
+    "cisco:catc:swim_summary"
+]
+
 def logger_for_input(input_name: str) -> logging.Logger:
     """Get the Logger instance for the input with name `input_name`"""
     return log.Logs().get_logger(f"{ADDON_NAME.lower()}_{input_name}")
@@ -117,6 +125,33 @@ def tag_cisco_dnac_host(data: dict, catalyst_center_conf_file: dict, input_item:
         if isinstance(data[sourcetype], list):
             for _data in data[sourcetype]:
                 _data.update({"cisco_dnac_host": catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host")})
+
+def tag_site_hierarchy(api: DNACenterAPI, data: dict) -> None:
+    cache = dict()
+    for sourcetype in data:
+        if sourcetype in EXCLUDED_SOURCETYPES:
+            pass
+        if isinstance(data[sourcetype], dict):
+            update_with_site_hierarchy(api, data[sourcetype], cache)
+        if isinstance(data[sourcetype], list):
+            for _data in data[sourcetype]:
+                update_with_site_hierarchy(api, _data, cache)
+
+def update_with_site_hierarchy(api: DNACenterAPI, data: dict, cache: dict) -> None:
+    index: int = None
+    for field in data.keys():
+        try:
+            index = DEVICE_ID_FIELDS.index(field)
+        except ValueError: 
+            continue
+    if index is not None:
+        # get the correct field name from DEVICE_ID_FIELDS (i.e. deviceUuid vs deviceId)
+        uuid = data[DEVICE_ID_FIELDS[index]]
+        if uuid not in cache:
+            # else find the ID (device not seen before)
+            response = api.devices.get_the_device_data_for_the_given_device_id_uuid(uuid).response
+            cache[uuid] = response.siteHierarchy
+        data.update({"siteHierarchy": cache[uuid]})
 
 def save_to_kv_store(
     kv_data: list[dict], 
