@@ -17,8 +17,7 @@ class CatalystCenterReport:
 
         # Optionally override these
         # (e.g. a specific report requires more/less time to process)
-        # TODO - figure out appropriate .sleep() timer
-        self.sleep_timer: int = 10
+        self.sleep_timer: int = 30
         
         self._report = dict()
         self.execution_id = None
