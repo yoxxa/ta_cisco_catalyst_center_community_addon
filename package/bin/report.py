@@ -24,6 +24,7 @@ class CatalystCenterReport:
         self.data: bytes = None
 
     def gather_report(self, catalyst_center_conf_file: dict, input_item: dict) -> csv.DictReader:
+        """ Interface for getting data for sending to Splunk KV store collection """
         try:
             self.get_report()
             self.get_execution_detail()
@@ -75,6 +76,7 @@ class CatalystCenterReport:
         self.data = report_bytes.split(b"\n\n")[-1]
 
     def tag_cisco_dnac_host(self, rows: csv.DictReader, cisco_dnac_host: str) -> io.StringIO:
+        """ Generate new StringIO with cisco_dnac_host column and values appended """
         new_rows = io.StringIO()
         headers = rows.fieldnames + ["cisco_dnac_host"]
         writer = csv.DictWriter(new_rows, fieldnames = headers)
@@ -85,6 +87,7 @@ class CatalystCenterReport:
         return io.StringIO(new_rows.getvalue())
 
     def prepare_for_kv_store(self, cisco_dnac_host: str) -> csv.DictReader:
+        """ Perform data transformation """
         report_rows = csv.DictReader(
             io.StringIO(self.data.decode("utf-8"))
         )

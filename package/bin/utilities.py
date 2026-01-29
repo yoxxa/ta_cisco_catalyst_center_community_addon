@@ -19,10 +19,11 @@ EXCLUDED_SOURCETYPES = [
 ]
 
 def logger_for_input(input_name: str) -> logging.Logger:
-    """Get the Logger instance for the input with name `input_name`"""
+    """ Get the Logger instance for the input with name `input_name` """
     return log.Logs().get_logger(f"{ADDON_NAME.lower()}_{input_name}")
 
 def set_logger_level(inputs: dict, logger: logging.Logger) -> None:
+    """ Set logging level across input called once per input """
     session_key = inputs.metadata["session_key"]
     log_level = conf_manager.get_log_level(
         logger=logger,
@@ -47,6 +48,10 @@ def get_catalyst_center_conf_file(inputs: dict) -> dict:
     return catalyst_center_conf_file
 
 def get_account_conf_conf_file(inputs: dict) -> dict:
+    """
+    gather by reference name in catalyst_center_conf_file in later code
+    {"name": "admin", "username": "admin", "password": "12345"}
+    """
     session_key = inputs.metadata["session_key"]
     cfm = conf_manager.ConfManager(
         session_key,
@@ -62,7 +67,7 @@ def construct_dnacentersdk(
     input_item: dict,
     cert: Certificate
 ) -> DNACenterAPI:
-    """Creates a new `DNACenterAPI` object"""
+    """ Creates a new `DNACenterAPI` object """
     return DNACenterAPI(
         username = account_conf_file.get(catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("account")).get("username"),
         password = account_conf_file.get(catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("account")).get("password"),
@@ -88,6 +93,7 @@ def send_data_to_splunk(
     input_item: dict, 
     input_name: str
 ) -> None:
+    """ Handles normalising data into dict to send to Splunk """
     for sourcetype in data:
         # single record i.e. dict
         if isinstance(data[sourcetype], dict):
@@ -117,6 +123,7 @@ def send_data_to_splunk(
         )
 
 def tag_cisco_dnac_host(data: dict, catalyst_center_conf_file: dict, input_item: dict) -> None:
+    """ Add Cisco Cat-C IP address/FQDN to dataset(s) """
     for sourcetype in data:
         # single record i.e. dict
         if isinstance(data[sourcetype], dict):
@@ -127,6 +134,7 @@ def tag_cisco_dnac_host(data: dict, catalyst_center_conf_file: dict, input_item:
                 _data.update({"cisco_dnac_host": catalyst_center_conf_file.get(input_item.get("catalyst_center")).get("catalyst_center_host")})
 
 def tag_site_hierarchy(api: DNACenterAPI, data: dict) -> None:
+    """ Add Cisco Cat-C site hierarchy to dataset(s) """
     cache = dict()
     for sourcetype in data:
         if sourcetype in EXCLUDED_SOURCETYPES:
@@ -138,6 +146,7 @@ def tag_site_hierarchy(api: DNACenterAPI, data: dict) -> None:
                 update_with_site_hierarchy(api, _data, cache)
 
 def update_with_site_hierarchy(api: DNACenterAPI, data: dict, cache: dict) -> None:
+    """ Low-level site hierarchy append function """
     index: int = None
     for field in data.keys():
         try:
@@ -159,6 +168,7 @@ def save_to_kv_store(
     kv_collection: str, 
     cisco_dnac_host: str
 ) -> None:
+    """ Uses Splunk SDK to flush and send data to KV store collection """
     service = client.connect(
         token = inputs.metadata["session_key"],
         owner = "nobody",
