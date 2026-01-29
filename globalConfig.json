@@ -704,6 +704,10 @@
                         "field": "index"
                     },
                     {
+                        "label": "Catalyst Center",
+                        "field": "catalyst_center"
+                    },
+                    {
                         "label": "Status",
                         "field": "disabled"
                     }
@@ -720,6 +724,10 @@
                     {
                         "label": "Index",
                         "field": "index"
+                    },
+                    {
+                        "label": "Catalyst Center",
+                        "field": "catalyst_center"
                     },
                     {
                         "label": "Status",
@@ -764,7 +772,7 @@
     "meta": {
         "name": "ta_cisco_catalyst_center_community_addon",
         "restRoot": "ta_cisco_catalyst_center_community_addon",
-        "version": "0.0.0+c2068b9",
+        "version": "0.0.0+fabc4ad",
         "displayName": "Cisco Catalyst Center Community Add-on",
         "schemaVersion": "0.0.10",
         "supportedThemes": [
