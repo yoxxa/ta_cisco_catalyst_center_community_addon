@@ -60,7 +60,6 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
                 logger
             )
             kv_data = report.gather_report(catalyst_center_conf_file, input_item)
-            logger.info(kv_data)
             kv_data = transform_for_kv_store(kv_data)
             utilities.save_to_kv_store(
                 kv_data, 
