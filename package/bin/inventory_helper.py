@@ -4,14 +4,15 @@ from report import CatalystCenterReport
 from dnacentersdk import DNACenterAPI
 from os.path import expandvars
 from pathlib import Path
+import csv
 
 import import_declare_test
 from solnlib import log
 from splunklib import modularinput as smi
 
-KV_STORE_COLLECTION = "inventory"
+KV_STORE_COLLECTION = "cc_inventory"
 
-def transform_for_kv_store(data: list[dict]) -> list[dict]:
+def transform_for_kv_store(data: csv.DictReader) -> list[dict]:
     kv_data = list()
     for row in data:
         kv_data.append(
