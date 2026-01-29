@@ -1,6 +1,8 @@
 import time
 from logging import Logger
 from dnacentersdk import DNACenterAPI, MalformedRequest, ApiError
+import csv
+import io
 
 class CatalystCenterReport:
     def __init__(
@@ -22,7 +24,7 @@ class CatalystCenterReport:
         self.execution_id = None
         self.data: bytes = None
 
-    def gather_report(self, catalyst_center_conf_file: dict, input_item: dict) -> None:
+    def gather_report(self, catalyst_center_conf_file: dict, input_item: dict) -> csv.DictReader:
         try:
             self.get_report()
             self.get_execution_detail()
@@ -73,18 +75,20 @@ class CatalystCenterReport:
         report_bytes = self.get_report_contents()
         self.data = report_bytes.split(b"\n\n")[-1]
 
-    def gather_report_rows(self, cisco_dnac_host: str) -> list[list[str]]:
-        report_rows = [data.split(",") for data in self.data.decode("utf-8").splitlines()]
-        self.tag_cisco_dnac_host(report_rows, cisco_dnac_host)
-        return report_rows
+    def tag_cisco_dnac_host(self, rows: csv.DictReader, cisco_dnac_host: str) -> io.StringIO:
+        new_rows = io.StringIO()
+        headers = rows.fieldnames + ["cisco_dnac_host"]
+        writer = csv.DictWriter(new_rows, fieldnames = headers)
+        writer.writeheader()
+        for row in rows:
+            row["cisco_dnac_host"] = cisco_dnac_host
+            writer.writerow(row)
+        return io.StringIO(new_rows.getvalue())
 
-    def tag_cisco_dnac_host(self, rows: list[list[str]], cisco_dnac_host: str) -> None:
-        rows[0].append("cisco_dnac_host")
-        for index in range(1, len(rows)):
-            rows[index].append(cisco_dnac_host)
-
-    def prepare_for_kv_store(self, cisco_dnac_host: str) -> list[dict]:
-        report_rows = self.gather_report_rows(cisco_dnac_host)
-        headers = report_rows[0]
-        rows = report_rows[1:]
-        return [dict(zip(headers, row)) for row in rows]
+    def prepare_for_kv_store(self, cisco_dnac_host: str) -> csv.DictReader:
+        report_rows = csv.DictReader(
+            io.StringIO(self.data.decode("utf-8"))
+        )
+        return csv.DictReader(
+            self.tag_cisco_dnac_host(report_rows, cisco_dnac_host)
+        )
