@@ -50,6 +50,16 @@ Consider it is best practice to run the report(s) 10-15 minutes before creating 
 ### Installation
 Standard installation process, download via Splunkbase and install via Web UI.
 
+The base pubicly available .tar.gz file has been compiled for `x86` platforms.
+
+If you are running on other architectures, try to compile the package on your platform.
+
+```
+(.venv) #> pip install splunk-add-on-ucc-framework
+sh scripts/build.sh
+```
+
+
 ### Troubleshooting
 Troubleshooting is not built in, but possible. A global Logger instance per input is instantiated for all types, but alas, this will require for you to write your own `logger.info()` calls around the codebase via filesystem access to `$SPLUNK_HOME/etc/apps/ta_cisco_catalyst_center_community_addon/bin`.
 
