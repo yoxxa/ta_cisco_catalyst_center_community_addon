@@ -5,11 +5,11 @@
         "id": {
             "group": null,
             "name": "ta_cisco_catalyst_center_community_addon",
-            "version": "0.0.1"
+            "version": "1.0.0"
         },
         "author": [
             {
-                "name": "",
+                "name": "yoxxa",
                 "email": null,
                 "company": null
             }
