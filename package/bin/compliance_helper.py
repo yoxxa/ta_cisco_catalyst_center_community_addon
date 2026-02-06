@@ -25,9 +25,9 @@ def get_eox_status_for_all_devices(api: DNACenterAPI, logger: logging.Logger) ->
 
 def get_eox_details_for_all_devices(api: DNACenterAPI, logger: logging.Logger) -> None:
     response = list()
-    for eox in DATA["cisco:catc:eox_detail"]:
+    for eox in DATA["cisco:catc:eox"]:
         response.append(
-            api.eox.get_eox_details_per_device(eox.deviceId).response[0]
+            api.eox.get_eox_details_per_device(eox.deviceId).response
         )
     DATA["cisco:catc:eox_detail"] = response
 
