@@ -754,6 +754,80 @@
                     ],
                     "inputHelperModule": "config_archive_helper",
                     "title": "Config Archive"
+                },
+                {
+                    "name": "eox_report",
+                    "entity": [
+                        {
+                            "type": "text",
+                            "label": "Name",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "errorMsg": "Input Name must begin with a letter and consist exclusively of alphanumeric characters and underscores.",
+                                    "pattern": "^[a-zA-Z]\\w*$"
+                                },
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of input name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ],
+                            "field": "name",
+                            "help": "A unique name for the data input.",
+                            "required": true
+                        },
+                        {
+                            "type": "interval",
+                            "label": "Interval",
+                            "defaultValue": "86400",
+                            "field": "interval",
+                            "options": {
+                                "range": [
+                                    10,
+                                    86400
+                                ]
+                            },
+                            "help": "Time interval of the data input, in seconds.",
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "label": "Report Name",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of input name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ],
+                            "field": "report_name",
+                            "help": "A report to ingest for the data input.",
+                            "required": true
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Catalyst Center to use",
+                            "options": {
+                                "referenceName": "catalyst_center"
+                            },
+                            "help": "Catalyst Center to use for this input.",
+                            "field": "catalyst_center",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of account name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ]
+                        }
+                    ],
+                    "inputHelperModule": "eox_helper",
+                    "title": "EoX"
                 }
             ],
             "title": "Inputs",
@@ -831,7 +905,8 @@
                     "groupServices": [
                         "inventory_report",
                         "security_advisories_report",
-                        "config_archive_report"
+                        "config_archive_report",
+                        "eox_report"
                     ]
                 }
             ]
