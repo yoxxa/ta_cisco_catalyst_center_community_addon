@@ -38,11 +38,11 @@ def get_network_settings(api: DNACenterAPI, logger: logging.Logger) -> None:
     DATA["cisco:catc:network_settings"] = api.compliance.get_compliance_detail(
         compliance_status = "NON_COMPLIANT",
         compliance_type = "NETWORK_SETTINGS"
-    )
+    ).response
 
 def get_device_network_settings(api: DNACenterAPI, logger: logging.Logger) -> None:
     response = list()
-    for device in DATA["cisco:catc:network_settings"]["response"]:
+    for device in DATA["cisco:catc:network_settings"]:
         response.append(
             api.compliance.compliance_details_of_device(
                 device_uuid = device.deviceUuid,
@@ -99,18 +99,14 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter):
                 input_item,
                 cert
             )
-            # try except handles sending already collected data
-            try:
-                get_eox_status_for_all_devices(api, logger)
-                get_eox_details_for_all_devices(api, logger)
-                get_eox_summary(api, logger)
-                get_network_settings(api, logger)
-                get_device_network_settings(api, logger)
-                get_swim(api, logger)
-                get_swim_detail(api, logger)
-                returns_the_image_summary_for_the_given_site(api, logger)
-            except:
-                continue
+            get_eox_status_for_all_devices(api, logger)
+            get_eox_details_for_all_devices(api, logger)
+            get_eox_summary(api, logger)
+            get_network_settings(api, logger)
+            get_device_network_settings(api, logger)
+            get_swim(api, logger)
+            get_swim_detail(api, logger)
+            returns_the_image_summary_for_the_given_site(api, logger)
             utilities.tag_cisco_dnac_host(
                 DATA,
                 catalyst_center_conf_file,
