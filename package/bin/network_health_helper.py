@@ -20,10 +20,40 @@ def get_overall_network_health(api: DNACenterAPI, logger: logging.Logger) -> Non
     DATA["cisco:catc:network_health"] = response
 
 def get_area_health(api: DNACenterAPI, logger: logging.Logger) -> None:
-    DATA["cisco:catc:area_health"] = api.sites.get_site_health(site_type = "AREA").response
+    # Must start offset at 1, as per `dnacentersdk` documentation, otherwise will get 400 error
+    offset = 1
+    response = list()
+    while True:
+        paged_response = api.sites.get_site_health(
+                site_type = "AREA",
+                # Max limit for this endpoint is 50
+                limit = 50,
+                offset = offset
+            ).response
+        # Indicates collected all pages of data, as response list is empty
+        if not paged_response:
+            break
+        response.extend(paged_response)
+        offset += 50
+    DATA["cisco:catc:area_health"] = response
 
 def get_building_health(api: DNACenterAPI, logger: logging.Logger) -> None:
-    DATA["cisco:catc:building_health"] = api.sites.get_site_health(site_type = "BUILDING").response
+    # Must start offset at 1, as per `dnacentersdk` documentation, otherwise will get 400 error
+    offset = 1
+    response = list()
+    while True:
+        paged_response = api.sites.get_site_health(
+                site_type = "BUILDING",
+                # Max limit for this endpoint is 50
+                limit = 50,
+                offset = offset
+            ).response
+        # Indicates collected all pages of data, as response list is empty
+        if not paged_response:
+            break
+        response.extend(paged_response)
+        offset += 50
+    DATA["cisco:catc:building_health"] = response
 
 def validate_input(definition: smi.ValidationDefinition):
     return
