@@ -21,7 +21,19 @@ def remove_bad_fields(device: dict) -> None:
         pass
 
 def get_devices(api: DNACenterAPI, logger: logging.Logger) -> None:
-    response = api.devices.devices().response
+    # Must start offset at 1, as per `dnacentersdk` documentation, otherwise will get 400 error
+    offset = 1
+    response = list()
+    while True:
+        paged_response = api.devices.devices(
+                limit = 500,
+                offset = offset
+            ).response
+        # Indicates collected all pages of data, as response list is empty
+        if not paged_response:
+            break
+        response.extend(paged_response)
+        offset += 500
     for device in response:
         remove_bad_fields(device)
         utilities.format_mac_address(device)
