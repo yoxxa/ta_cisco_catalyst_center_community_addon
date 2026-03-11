@@ -19,8 +19,21 @@ DATA = dict({
 })
 
 def get_eox_status_for_all_devices(api: DNACenterAPI, logger: logging.Logger) -> None:
-    response = api.eox.get_eox_status_for_all_devices().response
-    response = [eox for eox in response if eox.alertCount is not 0]
+    # Must start offset at 1, as per `dnacentersdk` documentation, otherwise will get 400 error
+    offset = 1
+    response = list()
+    while True:
+        paged_response = api.eox.get_eox_status_for_all_devices(
+                limit = 500,
+                offset = offset
+            ).response
+        # Indicates collected all pages of data, as response list is empty
+        if not paged_response:
+            break
+        response.extend(
+            [eox for eox in paged_response if eox.alertCount is not 0]
+        )
+        offset += 500
     DATA["cisco:catc:eox"] = response
 
 def get_eox_details_for_all_devices(api: DNACenterAPI, logger: logging.Logger) -> None:
@@ -35,10 +48,22 @@ def get_eox_summary(api: DNACenterAPI, logger: logging.Logger) -> None:
     DATA["cisco:catc:eox_summary"] = api.eox.get_eox_summary().response
 
 def get_network_settings(api: DNACenterAPI, logger: logging.Logger) -> None:
-    DATA["cisco:catc:network_settings"] = api.compliance.get_compliance_detail(
-        compliance_status = "NON_COMPLIANT",
-        compliance_type = "NETWORK_SETTINGS"
-    ).response
+    # Must start offset at 1, as per `dnacentersdk` documentation, otherwise will get 400 error
+    offset = 1
+    response = list()
+    while True:
+        paged_response = api.compliance.get_compliance_detail(
+                compliance_status = "NON_COMPLIANT",
+                compliance_type = "NETWORK_SETTINGS",
+                limit = 500,
+                offset = offset
+            ).response
+        # Indicates collected all pages of data, as response list is empty
+        if not paged_response:
+            break
+        response.extend(paged_response)
+        offset += 500
+    DATA["cisco:catc:network_settings"] = response
 
 def get_device_network_settings(api: DNACenterAPI, logger: logging.Logger) -> None:
     response = list()
@@ -52,10 +77,22 @@ def get_device_network_settings(api: DNACenterAPI, logger: logging.Logger) -> No
     DATA["cisco:catc:device_network_settings"] = response
 
 def get_swim(api: DNACenterAPI, logger: logging.Logger) -> None:
-    DATA["cisco:catc:swim"] = api.compliance.get_compliance_detail(
-        compliance_status = "NON_COMPLIANT",
-        compliance_type = "IMAGE"
-    ).response
+    # Must start offset at 1, as per `dnacentersdk` documentation, otherwise will get 400 error
+    offset = 1
+    response = list()
+    while True:
+        paged_response = api.compliance.get_compliance_detail(
+                compliance_status = "NON_COMPLIANT",
+                compliance_type = "IMAGE",
+                limit = 500,
+                offset = offset
+            ).response
+        # Indicates collected all pages of data, as response list is empty
+        if not paged_response:
+            break
+        response.extend(paged_response)
+        offset += 500
+    DATA["cisco:catc:swim"] = response
 
 def get_swim_detail(api: DNACenterAPI, logger: logging.Logger) -> None:
     response = list()
